@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Safe Schools Match-Up Challenge</title>
+<style>
+:root{--bg:#eef7ff;--ink:#17223b;--card:#fff;--accent:#5b5bd6;--good:#16834a;--bad:#c23b3b;--gold:#f2b705;--soft:#e8e8ff}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#eaf7ff,#fff7df);color:var(--ink)}
+header{padding:22px 16px 12px;text-align:center}.title{font-size:clamp(26px,5vw,44px);font-weight:900;margin:0}.sub{margin:7px auto;max-width:850px;font-size:16px}.toolbar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+button{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;background:var(--accent);color:white;box-shadow:0 3px 8px #0002}button.secondary{background:#34495e}button.gold{background:#b87b00}.pill{background:#fff;padding:9px 13px;border-radius:999px;font-weight:800;box-shadow:0 2px 7px #0002}
+main{max-width:1100px;margin:auto;padding:0 16px 32px}.panel{background:#ffffffcc;border-radius:18px;padding:16px;box-shadow:0 8px 25px #0002}.progress{height:14px;background:#dde3ea;border-radius:20px;overflow:hidden;margin:10px 0 16px}.bar{height:100%;width:0;background:linear-gradient(90deg,#5b5bd6,#20a76b);transition:.3s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.col h2{text-align:center;font-size:19px}.cards{display:grid;gap:10px}.card,.target{background:var(--card);border:3px solid transparent;border-radius:14px;padding:13px;min-height:64px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;box-shadow:0 3px 10px #0001;user-select:none}.card{cursor:grab;border-color:#bfc4ff}.card.selected{outline:4px solid var(--gold);transform:scale(1.02)}.target{border-style:dashed;border-color:#9eb3c8;cursor:pointer}.target.over{background:#eef0ff}.matched{background:#e5f7ec!important;border-color:var(--good)!important;color:#0e6337}.wrong{animation:shake .28s;background:#ffe8e8!important;border-color:var(--bad)!important}@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+.feedback{text-align:center;font-size:20px;font-weight:900;min-height:30px;margin:12px}.roundTitle{text-align:center;font-size:24px;font-weight:900}.instructions{text-align:center;margin:4px auto 14px;max-width:850px}.celebrate{font-size:54px;text-align:center}.hidden{display:none}.footer{text-align:center;font-size:13px;margin-top:15px;color:#566}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.card,.target{min-height:58px}.sub{font-size:14px}}
+</style>
+</head>
+<body>
+<header><h1 class="title">🛡️ SAFE SCHOOLS MATCH-UP CHALLENGE 🎓</h1><p class="sub">Complete 4 rounds with 15 matches in EACH round (60 total). Every round includes all major Safe Schools categories, and the difficulty increases from recall to analysis. Drag a card to its match — or tap a card, then tap its match.</p>
+<div class="toolbar"><span class="pill">⭐ Score: <span id="score">0</span></span><span class="pill">🔥 Streak: <span id="streak">0</span></span><span class="pill">🏆 Round: <span id="roundNum">1</span>/4</span><button class="secondary" id="soundBtn">🔊 Feedback Sounds: ON</button><button class="gold" id="restartBtn">↻ Restart</button></div></header>
+<main><section class="panel"><div class="roundTitle" id="roundTitle"></div><div class="instructions" id="roundHelp"></div><div class="progress"><div class="bar" id="bar"></div></div><div class="grid"><div class="col"><h2>🧩 DRAG / SELECT</h2><div class="cards" id="left"></div></div><div class="col"><h2>🎯 MATCH IT HERE</h2><div class="cards" id="right"></div></div></div><div class="feedback" id="feedback">Ready? Make your first match!</div><div style="text-align:center"><button id="nextBtn" class="hidden">Next Round ➜</button></div></section><div class="footer">Tip: Each round has 15 matches. Correct matches lock in place. Incorrect matches can be tried again. A jingle plays for a correct answer and a buzzer sounds for an incorrect answer.</div></main>
+<script>
+const rounds=[
+ {title:'Round 1: KNOW IT — Foundations',help:'15 matches. Every Safe Schools category is included. This round focuses on definitions, facts, and direct recall.',pairs:[
+ ['School safety','Students are safe from violence, bullying, harassment and substance use.'],
+ ['Safe school: violence','Students are protected from violence.'],
+ ['Safe school: illegal substances','The campus is not a marketplace for the sale or use of illegal substances.'],
+ ['Bullying','Being mean to another child over and over again.'],
+ ['Cyberbullying','Bullying that takes place using electronic technology.'],
+ ['Leaving someone out','Excluding a child on purpose.'],
+ ['Safe environment effect: health','Good physical and emotional health.'],
+ ['Safe environment effect: academics','High academic performance.'],
+ ['Unsafe environment effect: school progress','Risk for course failure or school dropout.'],
+ ['Teacher role: behaviour','Teach and model pro-social and positive behaviour.'],
+ ['Teacher role: rules','Enforce rules firmly, consistently and promptly.'],
+ ['Administrative routine','Taking attendance.'],
+ ['Lesson-running routine','Collecting assignments or returning homework.'],
+ ['Student responsibility: behaviour','Accept responsibility for your behaviour.'],
+ ['Student responsibility: respect','Treat students and staff with courtesy and respect.']
+ ]},
+ {title:'Round 2: RECOGNIZE IT — Examples & Clues',help:'15 matches. Every category appears again, but now you must recognize examples and clues instead of matching simple definitions.',pairs:[
+ ['A student learns without fear of threats','Characteristic of a safe school.'],
+ ['Students’ belongings are protected from stealing','Students are not victims of theft.'],
+ ['The school promotes a calm place for learning','A safe, positive and productive learning environment.'],
+ ['A student repeatedly sends mean messages','Cyberbullying.'],
+ ['A student repeatedly yells at and hits another student','Bullying through verbal and physical attack.'],
+ ['A fake profile is created to embarrass a classmate','Cyberbullying.'],
+ ['Students feel physically and emotionally well','A positive effect of a safe school environment.'],
+ ['A student begins missing school because school feels unsafe','Risk for poor attendance.'],
+ ['A student who is bullied feels alone and powerless','Possible effect of bullying.'],
+ ['A teacher stays caring and respectful during a problem','Appropriate teacher response.'],
+ ['A teacher reports and records a serious discipline problem','Accurate documentation and informing administration.'],
+ ['Students know where to place personal belongings','Housekeeping routine.'],
+ ['A student temporarily loses a preferred classroom privilege','Loss of privileges.'],
+ ['A student solves a disagreement without fighting','Using problem-solving skills.'],
+ ['A student reacts to anger without verbal or physical harm','Modelling responsible behaviour.']
+ ]},
+ {title:'Round 3: APPLY IT — Classroom Scenarios',help:'24 scenario-based matches. Every category is included. Read carefully and decide which Safe Schools concept best fits each situation.',pairs:[
+ ['During lunch, one student threatens another every day.','The school environment is not safe because students are under threats.'],
+ ['A student sees another student carrying a weapon and reports it.','Following school rules and reporting a serious safety violation.'],
+ ['Students can learn without violence, theft or illegal substances.','Characteristics of a safe school environment.'],
+ ['A student posts an embarrassing video of a classmate online.','Cyberbullying.'],
+ ['A child is deliberately excluded from the same group every day.','Bullying through purposeful exclusion.'],
+ ['A student repeatedly shouts insults and hits another student.','Bullying through verbal and physical attack.'],
+ ['A bullied student says, “I feel like I cannot defend myself.”','The student may feel powerless.'],
+ ['A student becomes nervous, lonely and frequently says they feel sick.','Possible effects of being bullied.'],
+ ['An unsafe environment leads a student to miss many school days.','Risk for poor attendance.'],
+ ['An angry student begins shouting. The teacher lowers her voice and stays calm.','Remain calm and rational; do not raise your voice.'],
+ ['A serious incident occurs. The teacher writes down what happened immediately.','Document the incident and submit the report to administration.'],
+ ['Students enter class noisily, so the teacher teaches a step-by-step entry procedure.','Student movement routine.'],
+ ['A student breaks a rule and is assigned a written reflection.','A penalty with a learning orientation.'],
+ ['A student damages another student’s property and admits responsibility.','Accept responsibility for behaviour.'],
+ ['An older student volunteers to help a younger student with schoolwork.','Peer tutoring or mentoring to help create a safe school.']
+ ]},
+ {title:'Round 4: SOLVE IT — Analysis & Best Decision',help:'24 challenging matches. Every category is represented. Choose the BEST Safe Schools interpretation or response for each complex situation.',pairs:[
+ ['A campus has no recent fights, but students are regularly threatened online and at school.','The school cannot be considered fully safe because safety includes freedom from bullying and harassment.'],
+ ['A school has strong rules but constant classroom disruption prevents learning.','A safe school must also maintain an atmosphere conducive to learning.'],
+ ['Parents, school staff and community partners jointly address behaviour concerns.','This reflects the home-school-community partnership approach.'],
+ ['A hurtful comment happens once during an argument.','It may be inappropriate behaviour, but the handout defines bullying as mean behaviour repeated over and over.'],
+ ['A student repeatedly posts rumors and embarrassing images from home.','This is cyberbullying because electronic technology is being used.'],
+ ['A student follows friends in bullying because they want to fit in.','The handout identifies peer copying and fitting in as reasons some children bully.'],
+ ['A student feels sad, alone, nervous and physically sick after repeated bullying.','These are possible emotional and physical effects of bullying.'],
+ ['A school improves safety and students become healthier and achieve more academically.','These outcomes match the listed effects of a safe school environment.'],
+ ['A student begins failing courses and considers leaving school because of persistent safety problems.','Unsafe schools can increase risk for course failure and school dropout.'],
+ ['A teacher punishes the whole class for the actions of two students.','This conflicts with the expectation of fair play in discipline.'],
+ ['After a serious conflict, a teacher relies only on memory and writes nothing down.','This fails the expectation to document the incident and keep accurate discipline records.'],
+ ['A class has repeated confusion about entering, leaving and transitions.','The teacher should strengthen student movement routines.'],
+ ['A student repeatedly breaks rules; the teacher uses a consequence designed to encourage reflection and learning.','This reflects consequences with a positive learning orientation.'],
+ ['A student is angry but chooses to walk away and seek help instead of threatening someone.','The student is modelling responsible behaviour without harming others.'],
+ ['A student joins an activity that promotes respect for differences and everyone’s rights.','The student is helping create a safer, more respectful school community.']
+ ]}
+];
+let round=0,score=0,streak=0,matched=0,selected=null,soundOn=true,audioCtx=null;
+const $=id=>document.getElementById(id); const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+function audio(){if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx}
+function tone(freq,dur=.12,type='sine',vol=.05){if(!soundOn)return; const c=audio(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.stop(c.currentTime+dur)}
+function correctSound(){if(!soundOn)return;[523.25,659.25,783.99,1046.50].forEach((f,i)=>setTimeout(()=>tone(f,.16,'triangle',.055),i*90))}
+function wrongSound(){if(!soundOn)return; tone(145,.32,'sawtooth',.07);setTimeout(()=>tone(105,.28,'square',.045),130)}
+function winSound(){if(!soundOn)return;[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.25,'triangle',.05),i*130))}
+function render(){matched=0;selected=null;$('roundNum').textContent=round+1;$('roundTitle').textContent=rounds[round].title;$('roundHelp').textContent=rounds[round].help;$('feedback').textContent='Ready? Make your first match!';$('nextBtn').classList.add('hidden');
+ const pairs=rounds[round].pairs.map((p,i)=>({id:'r'+round+'p'+i,left:p[0],right:p[1]}));
+ $('left').innerHTML='';$('right').innerHTML='';shuffle(pairs).forEach(p=>{let d=document.createElement('div');d.className='card';d.draggable=true;d.dataset.id=p.id;d.textContent=p.left;d.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',p.id));d.onclick=()=>selectCard(d);$('left').appendChild(d)});
+ shuffle(pairs).forEach(p=>{let d=document.createElement('div');d.className='target';d.dataset.id=p.id;d.textContent=p.right;d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('over')});d.addEventListener('dragleave',()=>d.classList.remove('over'));d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('over');attempt(e.dataTransfer.getData('text/plain'),d)});d.onclick=()=>{if(selected)attempt(selected.dataset.id,d)};$('right').appendChild(d)});updateProgress()}
+function selectCard(d){if(d.classList.contains('matched'))return;document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected'));selected=d;d.classList.add('selected');$('feedback').textContent='Now choose the matching card on the right.'}
+function attempt(id,target){let card=[...document.querySelectorAll('.card')].find(x=>x.dataset.id===id);if(!card||card.classList.contains('matched')||target.classList.contains('matched'))return;if(id===target.dataset.id){card.classList.remove('selected');card.classList.add('matched');target.classList.add('matched');card.draggable=false;selected=null;matched++;streak++;score+=10+(streak>1?2:0);correctSound();$('feedback').textContent=streak>=3?'🔥 Great streak! Correct!':'✅ Correct match!';updateProgress();if(matched===rounds[round].pairs.length)finishRound()}else{streak=0;wrongSound();card.classList.add('wrong');target.classList.add('wrong');$('feedback').textContent='❌ Not quite — try again!';setTimeout(()=>{card.classList.remove('wrong');target.classList.remove('wrong')},350);updateStats()}}
+function updateStats(){$('score').textContent=score;$('streak').textContent=streak}function updateProgress(){updateStats();$('bar').style.width=(matched/rounds[round].pairs.length*100)+'%'}
+function finishRound(){winSound();$('feedback').textContent=round===rounds.length-1?'🏆 SAFE SCHOOLS CHAMPION! You completed every round!':'🎉 Round complete! Excellent work!';if(round<rounds.length-1){$('nextBtn').classList.remove('hidden')}else{setTimeout(()=>{document.querySelector('.roundTitle').innerHTML='<div class="celebrate">🏆🎓🛡️</div>SAFE SCHOOLS CHAMPION!'},300)}}
+$('nextBtn').onclick=()=>{round++;render()};$('restartBtn').onclick=()=>{round=0;score=0;streak=0;render()};$('soundBtn').onclick=()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'🔊 Feedback Sounds: ON':'🔇 Feedback Sounds: OFF'};render();
+</script></body></html>
